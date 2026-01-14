@@ -9,11 +9,12 @@ describe('Hermione Granger banking flow', () => {
   });
 
   it('should complete full banking flow', () => {
+    // Customer login
     cy.contains('Customer Login').click();
-
     cy.get('#userSelect').select('Hermione Granger');
     cy.contains('Login').click();
 
+    // Account details assertions
     cy.get('.borderM strong')
       .eq(0)
       .invoke('text')
@@ -59,21 +60,23 @@ describe('Hermione Granger banking flow', () => {
     cy.get('table tbody tr')
       .should('have.length.at.least', 2);
 
+    // Most recent transaction - Withdraw
     cy.get('table tbody tr')
       .eq(0)
-      .within(() => {
-        cy.get('td').eq(1).should('contain.text', depositAmount);
-        cy.get('td').eq(2).should('contain.text', 'Credit');
-      });
-
-    cy.get('table tbody tr')
-      .eq(1)
       .within(() => {
         cy.get('td').eq(1).should('contain.text', withdrawAmount);
         cy.get('td').eq(2).should('contain.text', 'Debit');
       });
 
-    // Back and account change
+    // Earlier transaction - Deposit
+    cy.get('table tbody tr')
+      .eq(1)
+      .within(() => {
+        cy.get('td').eq(1).should('contain.text', depositAmount);
+        cy.get('td').eq(2).should('contain.text', 'Credit');
+      });
+
+    // Back and change account
     cy.contains('Back').click();
     cy.get('#accountSelect').select(1);
 
