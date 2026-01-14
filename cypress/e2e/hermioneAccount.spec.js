@@ -11,7 +11,7 @@ describe('Hermione Granger banking flow', () => {
   it('should complete full banking flow', () => {
     cy.contains('Customer Login').click();
 
-    cy.get('#userSelect').select('Hermoine Granger');
+    cy.get('#userSelect').select('Hermione Granger');
     cy.contains('Login').click();
 
     cy.get('.borderM strong')
@@ -27,9 +27,10 @@ describe('Hermione Granger banking flow', () => {
       .eq(2)
       .should('contain.text', 'Dollar');
 
+    // Deposit
     cy.contains('Deposit').click();
     cy.get('input[placeholder="amount"]').type(depositAmount);
-    cy.contains('Deposit').click();
+    cy.get('button[type="submit"]').click();
 
     cy.get('.error')
       .should('be.visible')
@@ -39,9 +40,10 @@ describe('Hermione Granger banking flow', () => {
       .eq(1)
       .should('contain.text', depositAmount);
 
+    // Withdraw
     cy.contains('Withdrawl').click();
     cy.get('input[placeholder="amount"]').type(withdrawAmount);
-    cy.contains('Withdraw').click();
+    cy.get('button[type="submit"]').click();
 
     cy.get('.error')
       .should('be.visible')
@@ -51,29 +53,35 @@ describe('Hermione Granger banking flow', () => {
       .eq(1)
       .should('contain.text', depositAmount - withdrawAmount);
 
+    // Transactions
     cy.contains('Transactions').click();
 
     cy.get('table tbody tr')
       .should('have.length.at.least', 2);
 
     cy.get('table tbody tr')
-      .first()
-      .should('contain.text', 'Credit');
+      .eq(0)
+      .within(() => {
+        cy.get('td').eq(1).should('contain.text', depositAmount);
+        cy.get('td').eq(2).should('contain.text', 'Credit');
+      });
 
     cy.get('table tbody tr')
-      .last()
-      .should('contain.text', 'Debit');
+      .eq(1)
+      .within(() => {
+        cy.get('td').eq(1).should('contain.text', withdrawAmount);
+        cy.get('td').eq(2).should('contain.text', 'Debit');
+      });
 
+    // Back and account change
     cy.contains('Back').click();
-
     cy.get('#accountSelect').select(1);
 
     cy.contains('Transactions').click();
-    cy.get('table tbody tr')
-      .should('have.length', 0);
+    cy.get('table tbody tr').should('have.length', 0);
 
+    // Logout
     cy.contains('Logout').click();
-
     cy.url().should('include', '/login');
     cy.contains('Customer Login').should('be.visible');
   });
